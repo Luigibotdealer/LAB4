@@ -28,6 +28,10 @@ path = []
 
 j = 0
 
+def line_track_stop():
+    motor.move(0, "forward", speed)
+    lcd.clear()
+
 def IR_control():
     global info, lcd_print, mark_ir, mark, lt
     IR_re = irm.scan()
@@ -73,7 +77,7 @@ def navigate_maze():
         print(line_track_value)
         lt = line_track_value
     
-    if line_track_value == [1, 0, 1]:  # Follow the line
+    if line_track_value == [1, 1, 0, 1, 1]:  # Follow the line
         motor.move(1, "forward", speed)
         lcd_print = "forward"
     
@@ -130,7 +134,7 @@ def navigate_maze():
     elif line_track_value == [1, 1, 1]:  # No line detected, dead end
         motor.move(1, "turn_left", speed_low)
         lcd_print = "Dead end"
-        path.append("B")
+        path.append("L")
         start_time = time.time()
         while time.time() - start_time < 1:
             if line_tracking.get_ir_value() != line_track_value:
@@ -141,83 +145,79 @@ def navigate_maze():
         lcd.putstr("Line Tracking\n" + lcd_print)
         info = lcd_print
 
-def solve_maze():
+# def solve_maze():
 
-    global info, lcd_print, lt, j
-    line_track_value = line_tracking.get_ir_value()
+#     global info, lcd_print, lt, j
+#     line_track_value = line_tracking.get_ir_value()
     
-    if lt != line_track_value:
-        print(line_track_value)
-        lt = line_track_value
+#     if lt != line_track_value:
+#         print(line_track_value)
+#         lt = line_track_value
     
-    if line_track_value == [1, 0, 1]:  # Follow the line
-        motor.move(1, "forward", speed)
-        lcd_print = "forward"
+#     if line_track_value == [1, 0, 1]:  # Follow the line
+#         motor.move(1, "forward", speed)
+#         lcd_print = "forward"
     
-    elif line_track_value == [0, 1, 1]:  # Slight left correction
-        motor.move(1, "left_forward", speed)
-        lcd_print = "left"
+#     elif line_track_value == [0, 1, 1]:  # Slight left correction
+#         motor.move(1, "left_forward", speed)
+#         lcd_print = "left"
     
-    elif line_track_value == [1, 1, 0]:  # Slight right correction
-        motor.move(1, "right_forward", speed)
-        lcd_print = "right"
+#     elif line_track_value == [1, 1, 0]:  # Slight right correction
+#         motor.move(1, "right_forward", speed)
+#         lcd_print = "right"
     
-    else:
-        if j < len(path):
-            if path[j] == "S":
-                motor.move(1, "forward", speed)
-                lcd_print = "forward"
-                start_time = time.time()
-                while time.time() - start_time < 0.5:
-                    if line_tracking.get_ir_value() != line_track_value:
-                        break  # Stop early if the condition changes
-            elif path[j]  == "L":
-                motor.move(1, "turn_left", speed_low)
-                lcd_print = "left turn"
-                start_time = time.time()
-                while time.time() - start_time < 0.5:
-                    if line_tracking.get_ir_value() != line_track_value:
-                        break  # Stop early if the condition changes
-            elif path[j]  == "R":
-                motor.move(1, "turn_right", speed_low)
-                lcd_print = "right turn"
-                start_time = time.time()
-                while time.time() - start_time < 0.5:
-                    if line_tracking.get_ir_value() != line_track_value:
-                        break  # Stop early if the condition changes
-            j += 1
+#     else:
+#         if j < len(path):
+#             if path[j] == "S":
+#                 motor.move(1, "forward", speed)
+#                 lcd_print = "forward"
+#                 start_time = time.time()
+#                 while time.time() - start_time < 0.5:
+#                     if line_tracking.get_ir_value() != line_track_value:
+#                         break  # Stop early if the condition changes
+#             elif path[j]  == "L":
+#                 motor.move(1, "turn_left", speed_low)
+#                 lcd_print = "left turn"
+#                 start_time = time.time()
+#                 while time.time() - start_time < 0.5:
+#                     if line_tracking.get_ir_value() != line_track_value:
+#                         break  # Stop early if the condition changes
+#             elif path[j]  == "R":
+#                 motor.move(1, "turn_right", speed_low)
+#                 lcd_print = "right turn"
+#                 start_time = time.time()
+#                 while time.time() - start_time < 0.5:
+#                     if line_tracking.get_ir_value() != line_track_value:
+#                         break  # Stop early if the condition changes
+#             j += 1
     
-    if info != lcd_print:
-        lcd.clear()
-        lcd.putstr("Solving Maze\n" + lcd_print)
-        info = lcd_print
+#     if info != lcd_print:
+#         lcd.clear()
+#         lcd.putstr("Solving Maze\n" + lcd_print)
+#         info = lcd_print
 
-def line_track_stop():
-    motor.move(0, "stop", 0)
-    lcd.clear()
+# def optimize_path(path): # Function to optimize path
+#     """ Continuously optimizes the path array until all 'B' terms are removed. """
+#     optimizations = {
+#         ('L', 'B', 'L'): 'S',
+#         ('L', 'B', 'R'): 'B',
+#         ('L', 'B', 'S'): 'R',
+#         ('R', 'B', 'L'): 'B',
+#         ('S', 'B', 'L'): 'R',
+#         ('S', 'B', 'S'): 'B',
+#     }
 
-def optimize_path(path): # Function to optimize path
-    """ Continuously optimizes the path array until all 'B' terms are removed. """
-    optimizations = {
-        ('L', 'B', 'L'): 'S',
-        ('L', 'B', 'R'): 'B',
-        ('L', 'B', 'S'): 'R',
-        ('R', 'B', 'L'): 'B',
-        ('S', 'B', 'L'): 'R',
-        ('S', 'B', 'S'): 'B',
-    }
-
-    optimized = True
-    while optimized:
-        optimized = False
-        for i in range(len(path) - 2):
-            triplet = (path[i], path[i+1], path[i+2])
-            if triplet in optimizations:
-                path[i:i+3] = [optimizations[triplet]]
-                optimized = True  # Re-run optimization if changes occur
-                break
+#     optimized = True
+#     while optimized:
+#         optimized = False
+#         for i in range(len(path) - 2):
+#             triplet = (path[i], path[i+1], path[i+2])
+#             if triplet in optimizations:
+#                 path[i:i+3] = [optimizations[triplet]]
+#                 optimized = True  # Re-run optimization if changes occur
+#                 break
         
-    return path
+#     return path
 
 if __name__ == '__main__':
     try:
