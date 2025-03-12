@@ -73,73 +73,81 @@ def navigate_maze():
         print(line_track_value)
         lt = line_track_value
     
-    if line_track_value == [1, 0, 1]:  # Follow the line
-        motor.move(1, "forward", speed)
-        lcd_print = "forward"
-    
-    elif line_track_value == [0, 1, 1]:  # Slight left correction
-        motor.move(1, "left_forward", speed)
-        lcd_print = "left_forward"
-    
-    elif line_track_value == [1, 1, 0]:  # Slight right correction
-        motor.move(1, "right_forward", speed)
-        lcd_print = "right forward"
-    
-    elif line_track_value == [0, 0, 1]:  # Left bias turn
-        #if path and path[-1] == "B":
-        motor.move(1, "forward", speed)
-        lcd_print = "forward"
-        path.append("F")
+    if line_track_value[:2] == [1, 0]:
+        motor.move(1, "turn_right", speed)
         start_time = time.time()
-        while time.time() - start_time < 1:
+        while time.time() - start_time < 0.4:
             if line_tracking.get_ir_value() != line_track_value:
                 break  # Stop early if the condition changes
 
-        # else:
-        #     motor.move(1, "turn_left", speed_low)
-        #     lcd_print = "left turn"
-        #     path.append("L")
-        #     start_time = time.time()
-        #     time.sleep(1)
+    elif line_track_value[:2] == [0, 1]:
+        motor.move(1, "turn_left", speed)
+        start_time = time.time()
+        while time.time() - start_time < 0.4:
+            if line_tracking.get_ir_value() != line_track_value:
+                break  # Stop early if the condition changes
+
+    elif line_track_value[:2] == [0, 0]:
+        motor.move(1, "turn_left", speed)
+        start_time = time.time()
+        while time.time() - start_time < 0.4:
+            if line_tracking.get_ir_value() != line_track_value:
+                break  # Stop early if the condition changes
+
+    elif line_track_value[:2] == [1, 1]:  # Only check the first two values
+    
+        if line_track_value[-3:] == [1, 1, 0]:  # Follow the line
+            motor.move(1, "forward", speed)
+            lcd_print = "forward"
+
+        elif line_track_value[-3:] == [0, 1, 1]:  # Slight left correction
+            motor.move(1, "left_forward", speed)
+            lcd_print = "left_forward"
+
+        elif line_track_value[-3:] == [1, 1, 0]:  # Slight right correction
+            motor.move(1, "right_forward", speed)
+            lcd_print = "right forward"
+
+        elif line_track_value[-3:] == [0, 0, 1]:  # Forward
+            motor.move(1, "forward", speed)
+            lcd_print = "forward"
+            path.append("F")
+            start_time = time.time()
+            while time.time() - start_time < 1:
+                if line_tracking.get_ir_value() != line_track_value:
+                    break  # Stop early if the condition changes
+
+        elif line_track_value[-3:] == [1, 0, 0]:  # Forward
+            motor.move(1, "forward", speed)
+            lcd_print = "forward"
+            path.append("F")
+            start_time = time.time()
+            while time.time() - start_time < 1:
+                if line_tracking.get_ir_value() != line_track_value:
+                    break  # Stop early if the condition changes
+
+        elif line_track_value[-3:] == [0, 0, 0]:  # Junction detected
+            motor.move(1, "forward", speed_low)
+            lcd_print = "forward"
+            path.append("F")
+            start_time = time.time()
+            while time.time() - start_time < 1:
+                if line_tracking.get_ir_value() != line_track_value:
+                    break  # Stop early if the condition changes
+
+        elif line_track_value[-3:] == [1, 1, 1]:  # No line detected, dead end
+            motor.move(1, "turn_left", speed_low)
+            lcd_print = "Dead end"
+            path.append("L")
+            start_time = time.time()
+            while time.time() - start_time < 1:
+                if line_tracking.get_ir_value() != line_track_value:
+                    break  # Stop early if the condition changes
                 
-    elif line_track_value == [1, 0, 0]:  # Right turn
-        #if path and path[-1] == "B":
-        motor.move(1, "forward", speed)
-        lcd_print = "forward"
-        path.append("F")
-        start_time = time.time()
-        while time.time() - start_time < 1:
-            if line_tracking.get_ir_value() != line_track_value:
-                break  # Stop early if the condition changes
-        # else:
-        #     motor.move(1, "turn_right", speed_low)
-        #     lcd_print = "right turn"
-        #     path.append("R")
-        #     start_time = time.time()
-        #     time.sleep(1)
-                
-    elif line_track_value == [0, 0, 0]:  # Junction detected
-        motor.move(1, "forward", speed_low)
-        lcd_print = "forward"
-        path.append("F")
-        start_time = time.time()
-        while time.time() - start_time < 1:
-            if line_tracking.get_ir_value() != line_track_value:
-                break  # Stop early if the condition changes
-            
-    elif line_track_value == [1, 1, 1]:  # No line detected, dead end
-        motor.move(1, "turn_left", speed_low)
-        lcd_print = "Dead end"
-        path.append("B")
-        start_time = time.time()
-        while time.time() - start_time < 1:
-            if line_tracking.get_ir_value() != line_track_value:
-                break  # Stop early if the condition changes
-            
-    if info != lcd_print:
-        lcd.clear()
-        lcd.putstr("Line Tracking\n" + lcd_print)
-        info = lcd_print
+        if info != lcd_print:
+            lcd.clear()
+            lcd.putstr("Line Tracking\n" + lcd_print)
+            info = lcd_print
 
 def solve_maze():
 

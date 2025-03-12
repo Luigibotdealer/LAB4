@@ -630,9 +630,11 @@ class Line_tracking():
         self.ir_left = Pin(6, Pin.IN)
         self.ir_middle = Pin(5, Pin.IN)
         self.ir_right = Pin(4, Pin.IN)
+        self.ir_far_left = Pin(9, Pin.IN)
+        self.ir_far_right = Pin(10, Pin.IN)
         
     def get_ir_value(self):
-        return [self.ir_left.value(),self.ir_middle.value() ,self.ir_right.value()]
+        return [self.ir_far_left.value(), self.ir_far_right.value(),self.ir_left.value(),self.ir_middle.value() ,self.ir_right.value()]
     
 
 '''
