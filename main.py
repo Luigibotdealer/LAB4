@@ -86,6 +86,9 @@ def navigate_maze():
                 break  # Stop early if the condition changes
 
     elif line_track_value[:2] == [0, 1]:
+        if path and path[-1] == "R":  # Check if the last move was a right turn
+            motor.move(1, "forward", speed)
+            time.sleep(0.1)
         motor.move(1, "turn_left", speed_low)
         lcd_print = "left left sensor"
         path.append("L")
@@ -102,10 +105,11 @@ def navigate_maze():
         path.append("L")
         start_time = time.time()
         #Min 0.1
-        time.sleep(0.1)
         while time.time() - start_time < 3:
             if line_tracking.get_ir_value() != line_track_value:
                 break  # Stop early if the condition changes
+        motor.move(1, "forward", speed)
+        time.sleep(0.1)
 
     elif line_track_value[:2] == [1, 1]:  # Only check the first two values
     
