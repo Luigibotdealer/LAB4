@@ -8,11 +8,12 @@ lcd = I2cLcd(i2c, DEFAULT_I2C_ADDR, 2, 16)
 
 line_tracking = Line_tracking()
 motor = Motor()
-speed = 35
-speed_low = 28
+speed = 40
+speed_low = 35
 info = ''
 lcd_print = ''
 lt = []
+turn_time = 0.4
 
 PIN = 22;
 irm = IR(PIN)
@@ -77,20 +78,21 @@ def navigate_maze():
         motor.move(1, "turn_right", speed_low)
         lcd_print = "Turning right"
         path.append("R")
-        #time.stop(0.5)
-        time.sleep(0.5)
-        #start_time = time.time()
-        #while time.time() - start_time < 2:
-        #    if line_tracking.get_ir_value() != line_track_value:
-         #       break  # Stop early if the condition changes
+        start_time = time.time()
+        #Minimum of 0.2 of turn
+        time.sleep(0.2)
+        while time.time() - start_time < 3:
+            if line_tracking.get_ir_value() != line_track_value:
+                break  # Stop early if the condition changes
 
     elif line_track_value[:2] == [0, 1]:
         motor.move(1, "turn_left", speed_low)
         lcd_print = "left left sensor"
         path.append("L")
         start_time = time.time()
-        #You have 5 seconds to interrupt
-        while time.time() - start_time < 1:
+        #Minimum of 0.2 of turn
+        time.sleep(0.2)
+        while time.time() - start_time < 3:
             if line_tracking.get_ir_value() != line_track_value:
                 break  # Stop early if the condition changes
 
@@ -99,7 +101,9 @@ def navigate_maze():
         lcd_print = "left both 0"
         path.append("L")
         start_time = time.time()
-        while time.time() - start_time < 0.8:
+        #Min 0.1
+        time.sleep(0.1)
+        while time.time() - start_time < 3:
             if line_tracking.get_ir_value() != line_track_value:
                 break  # Stop early if the condition changes
 
@@ -123,7 +127,7 @@ def navigate_maze():
             lcd_print = "forward"
             path.append("F")
             start_time = time.time()
-            while time.time() - start_time < 1:
+            while time.time() - start_time < 4:
                 if line_tracking.get_ir_value() != line_track_value:
                     break  # Stop early if the condition changes
 
@@ -132,7 +136,7 @@ def navigate_maze():
             lcd_print = "forward"
             path.append("F")
             start_time = time.time()
-            while time.time() - start_time < 1:
+            while time.time() - start_time < 4:
                 if line_tracking.get_ir_value() != line_track_value:
                     break  # Stop early if the condition changes
 
@@ -141,7 +145,7 @@ def navigate_maze():
             lcd_print = "forward"
             path.append("F")
             start_time = time.time()
-            while time.time() - start_time < 1:
+            while time.time() - start_time < 4:
                 if line_tracking.get_ir_value() != line_track_value:
                     break  # Stop early if the condition changes
 
@@ -150,7 +154,8 @@ def navigate_maze():
             lcd_print = "Dead end"
             path.append("L")
             start_time = time.time()
-            while time.time() - start_time < 1:
+            #
+            while time.time() - start_time < 3:
                 if line_tracking.get_ir_value() != line_track_value:
                     break  # Stop early if the condition changes
                 
